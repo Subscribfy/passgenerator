@@ -90,13 +90,14 @@ class PassGenerator
      *
      * @param bool|string $passId          [optional] If given, it'll be used to name the pass file.
      * @param bool        $replaceExistent [optional] If true, it'll replace any existing pass with the same filename.
+     * param string       $tenantId
      *
      * @throws InvalidArgumentException|RuntimeException
      */
-    public function __construct($passId = false, bool $replaceExistent = false)
+    public function __construct( $passId = false, bool $replaceExistent = false, string $tenantId = '')
     {
         // Set certificate
-        $certPath = config('passgenerator.certificate_store_path');
+        $certPath = $this->perTenant($tenantId, config('passgenerator.certificate_store_path'));
 
         if (is_file($certPath)) {
             $this->certStore = file_get_contents($certPath);
@@ -107,10 +108,10 @@ class PassGenerator
         }
 
         // Set password
-        $this->certStorePassword = config('passgenerator.certificate_store_password');
+        $this->certStorePassword = $this->perTenant($tenantId, config('passgenerator.certificate_store_password'));
 
         // Set WWDR certificate
-        $wwdrCertPath = config('passgenerator.wwdr_certificate_path');
+        $wwdrCertPath = $this->perTenant($tenantId, config('passgenerator.wwdr_certificate_path'));
 
         $validCert = false;
         if (is_file($wwdrCertPath)) {
@@ -183,7 +184,7 @@ class PassGenerator
             }
             return;
         }
-        
+
         throw new InvalidArgumentException("The file $assetPath does NOT exist");
     }
 
@@ -472,4 +473,11 @@ class PassGenerator
             Storage::disk('passgenerator')->makeDirectory($this->passRelativePath);
         }
     }
+	/*
+	 * Used to set the tenants path for certificates
+	 */
+	protected function perTenant(string $tenantId, string $path): string
+	{
+		return str_replace('{TENANT_ID}', $tenantId, $path);
+	}
 }
