@@ -449,16 +449,20 @@ class PassGenerator
 
         // Add the manifest
         $zip->addFile($manifestPath, $this->manifestFilename);
+		$zip->setCompressionName($this->manifestFilename, ZipArchive::CM_STORE);
 
         // Add the signature
         $zip->addFile($signaturePath, $this->signatureFilename);
+		$zip->setCompressionName($this->signatureFilename, ZipArchive::CM_STORE);
 
         // Add pass.json
         $zip->addFromString($this->passJsonFilename, $this->passJson);
+		$zip->setCompressionName($this->passJsonFilename, ZipArchive::CM_STORE);
 
         // Add all the assets
         foreach ($this->assets as $name => $path) {
             $zip->addFile($path, $name);
+			$zip->setCompressionName($name, ZipArchive::CM_STORE);
         }
 
         $zip->close();
